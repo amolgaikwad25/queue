@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Queues - Smart Queue</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+        .status-waiting { color: #ffc107; }
+        .status-serving { color: #28a745; }
+        .btn { padding: 0.5rem 1rem; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; }
+        .btn:hover { background-color: #218838; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-danger:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ service.name }} - Queue Management</h1>
+            <div>
+                <form method="post" action="{% url 'call_next' service.id %}" style="display:inline">
+                    {% csrf_token %}
+                    <button class="btn">Call Next Token</button>
+                </form>
+                {% if service.paused %}
+                    <form method="post" action="{% url 'resume_service' service.id %}" style="display:inline">
+                        {% csrf_token %}
+                        <button class="btn">Resume Service</button>
+                    </form>
+                {% else %}
+                    <form method="post" action="{% url 'pause_service' service.id %}" style="display:inline">
+                        {% csrf_token %}
+                        <button class="btn">Pause Service</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>User UQID</th>
+                    <th>Status</th>
+                    <th>Joined At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for queue in queues %}
+                    <tr>
+                        <td>{{ queue.token_number }}</td>
+                        <td>{{ queue.user.uqid }}</td>
+                        <td class="status-{{ queue.status }}">{{ queue.get_status_display }}</td>
+                        <td>{{ queue.joined_at }}</td>
+                        <td>
+                            <form method="post" action="{% url 'complete_queue' queue.id %}" style="display:inline">
+                                {% csrf_token %}
+                                {% if queue.status == 'serving' %}
+                                    <button class="btn btn-danger">Complete</button>
+                                {% endif %}
+                            </form>
+
+                            <form method="post" action="{% url 'skip_queue' queue.id %}" style="display:inline" onsubmit="return confirmSkip(this);">
+                                {% csrf_token %}
+                                <input type="hidden" name="reason" value="" />
+                                <button class="btn">Skip</button>
+                            </form>
+
+                            <form method="post" action="{% url 'cancel_queue' queue.id %}" style="display:inline" onsubmit="return confirmSkip(this);">
+                                {% csrf_token %}
+                                <input type="hidden" name="reason" value="" />
+                                <button class="btn btn-danger">Cancel</button>
+                            </form>
+                            <!-- Send SMS action (enabled if user has a valid 10-digit phone_number or legacy phone) -->
+                            {% if queue.user %}
+                                {% if queue.user.phone_number and queue.user.phone_number|length == 10 %}
+                                    <a class="btn" href="{% url 'send_token_sms' queue.id %}">Send SMS</a>
+                                {% elif queue.user.phone and queue.user.phone|length == 10 %}
+                                    <a class="btn" href="{% url 'send_token_sms' queue.id %}">Send SMS</a>
+                                {% else %}
+                                    <button class="btn" disabled title="No valid phone on user">Send SMS</button>
+                                {% endif %}
+                            {% else %}
+                                <button class="btn" disabled title="No user attached">Send SMS</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'admin_dashboard' %}">Back to Dashboard</a>
+    </div>
+            <script>
+                function confirmSkip(form){
+                    var reason = prompt('Please enter a reason (required):');
+                    if(!reason){
+                        alert('Reason is required');
+                        return false;
+                    }
+                    form.querySelector('input[name="reason"]').value = reason;
+                    return true;
+                }
+            </script>
+</body>
+</html>

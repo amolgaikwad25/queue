@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h1>Send SMS for Token #{{ queue.token_number }}</h1>
+  <p>User: {{ user.get_full_name }} ({{ user.uqid }})</p>
+  <p>Phone: <strong>{{ display_phone }}</strong></p>
+  <p>Status: {{ queue.get_status_display }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <label for="template">Templates:</label>
+    <select id="template" onchange="applyTemplate()">
+      <option value="">-- choose --</option>
+      <option value="{{ templates.next }}">Next</option>
+      <option value="{{ templates.serving }}">Serving</option>
+      <option value="{{ templates.delayed }}">Delayed</option>
+    </select>
+    <br/>
+    <label for="message">Message (max 160):</label><br/>
+    <textarea id="message" name="message" rows="4" cols="60" maxlength="160"></textarea>
+    <br/>
+    <button class="btn" type="submit">Send SMS</button>
+    <a href="{% url 'service_queues' queue.service.id %}">Cancel</a>
+  </form>
+</div>
+<script>
+function applyTemplate(){
+  var sel = document.getElementById('template');
+  var msg = document.getElementById('message');
+  msg.value = sel.value;
+}
+</script>
+{% endblock %}

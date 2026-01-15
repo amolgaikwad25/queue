@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant - Smart Queue</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; text-align: center; }
+        .container { max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .mic-btn { font-size: 4rem; background: none; border: none; cursor: pointer; margin: 2rem 0; }
+        .response { margin: 2rem 0; padding: 1rem; background: #f8f9fa; border-radius: 4px; min-height: 50px; }
+        .status { margin: 1rem 0; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Voice Assistant</h1>
+        <p>Speak to get your queue information</p>
+        <button id="mic-btn" class="mic-btn" onclick="toggleListening()">🎤</button>
+        <div id="status" class="status">Click the microphone to speak</div>
+        <div id="response" class="response"></div>
+        <button onclick="getQueueInfo()">Get Queue Info (Text)</button>
+        <div id="recognized-text" style="margin-top: 1rem; font-style: italic; color: #666;"></div>
+    </div>
+
+    <script>
+        let isListening = false;
+        let recognition = null;
+
+        function toggleListening() {
+            if (!isListening) {
+                startListening();
+            } else {
+                stopListening();
+            }
+        }
+
+        function startListening() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                document.getElementById('status').textContent = 'Speech recognition not supported in this browser';
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('mic-btn').style.color = 'red';
+                document.getElementById('status').textContent = 'Listening... Click again to stop';
+                document.getElementById('response').textContent = '';
+                document.getElementById('recognized-text').textContent = '';
+            };
+
+            recognition.onresult = function(event) {
+                const text = event.results[0][0].transcript;
+                document.getElementById('recognized-text').textContent = `You said: "${text}"`;
+                processVoiceCommand(text);
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                document.getElementById('status').textContent = `Error: ${event.error}`;
+                isListening = false;
+                document.getElementById('mic-btn').style.color = 'black';
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                document.getElementById('mic-btn').style.color = 'black';
+                document.getElementById('status').textContent = 'Click the microphone to speak';
+            };
+
+            try {
+                recognition.start();
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error starting speech recognition';
+                console.error('Error starting recognition:', error);
+            }
+        }
+
+        function stopListening() {
+            if (recognition && isListening) {
+                recognition.stop();
+            }
+        }
+
+        function sendAudioToServer(audioBlob) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.wav');
+
+            fetch('/voice/process/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('recognized-text').textContent = `You said: "${data.recognized_text}"`;
+                    document.getElementById('response').textContent = data.response;
+                    document.getElementById('status').textContent = 'Click the microphone to speak';
+                    // Play the response (in a real implementation)
+                    speakResponse(data.response);
+                } else {
+                    document.getElementById('response').textContent = `Error: ${data.error}`;
+                    document.getElementById('status').textContent = 'Click the microphone to speak';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('response').textContent = 'Error processing voice';
+                document.getElementById('status').textContent = 'Click the microphone to speak';
+            });
+        }
+
+        function speakResponse(text) {
+            // Use Web Speech API for text-to-speech
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function getQueueInfo() {
+            document.getElementById('status').textContent = 'Getting queue info...';
+            fetch('/voice/info/')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('response').textContent = data.info;
+                    document.getElementById('status').textContent = 'Click the microphone to speak';
+                    speakResponse(data.info);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('response').textContent = 'Error getting queue info';
+                    document.getElementById('status').textContent = 'Click the microphone to speak';
+                });
+        }
+    </script>
+</body>
+</html>

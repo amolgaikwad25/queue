@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Status - Smart Queue</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; text-align: center; }
+        .container { max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .token { font-size: 3rem; font-weight: bold; color: #333; margin: 1rem 0; }
+        .status { font-size: 1.5rem; margin: 1rem 0; }
+        .waiting { color: #ffc107; }
+        .serving { color: #28a745; }
+        .completed { color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Queue Status</h1>
+        <div class="token">Token: {{ queue.token_number }}</div>
+        <div id="status" class="status {{ queue.status }}">{{ queue.get_status_display }}</div>
+        <p><strong>Service:</strong> {{ queue.service.name }}</p>
+        <p><strong>Location:</strong> {{ queue.service.location }}</p>
+        <p><strong>Joined at:</strong> {{ queue.joined_at }}</p>
+        <p id="eta" style="font-weight:600;">Calculating ETA...</p>
+        {% if queue.counter_number %}
+            <p><strong>Counter:</strong> {{ queue.counter_number }}</p>
+        {% endif %}
+        <a href="{% url 'my_queues' %}">View All My Queues</a>
+        <br><br>
+        <a href="{% url 'home' %}">Back to Home</a>
+    </div>
+    <script>
+        // Poll backend ETA endpoint every 5 seconds and update status
+        const queueId = {{ queue.id }};
+        async function fetchEta() {
+            try {
+                const res = await fetch(`/queue/eta/${queueId}/`, { credentials: 'same-origin' });
+                if (!res.ok) return;
+                const data = await res.json();
+                document.getElementById('status').textContent = data.status;
+                document.getElementById('eta').textContent = `Tokens ahead: ${data.tokens_ahead} • ETA: ${data.eta_minutes} minutes`;
+            } catch (e) {
+                console.error('ETA fetch failed', e);
+            }
+        }
+        fetchEta();
+        setInterval(fetchEta, 5000);
+    </script>
+</body>
+</html>

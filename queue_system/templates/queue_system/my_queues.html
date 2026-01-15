@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Queues - Smart Queue</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+        .status-waiting { color: #ffc107; }
+        .status-serving { color: #28a745; }
+        .status-completed { color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Queue History</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Service</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Joined At</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for queue in queues %}
+                    <tr>
+                        <td>{{ queue.token_number }}</td>
+                        <td>{{ queue.service.name }}</td>
+                        <td>{{ queue.service.location }}</td>
+                        <td class="status-{{ queue.status }}">{{ queue.get_status_display }}</td>
+                        <td>{{ queue.joined_at }}</td>
+                        <td><a href="{% url 'queue_status' queue.id %}">View</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'home' %}">Back to Home</a>
+    </div>
+</body>
+</html>

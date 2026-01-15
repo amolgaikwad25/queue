@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Dashboard - Smart Queue{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-header h1 {
+        margin: 0;
+        font-size: 2.5em;
+        font-weight: 300;
+    }
+
+    .user-info {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-left: 5px solid #667eea;
+    }
+
+    .user-info h3 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.4em;
+    }
+
+    .uqid-display {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        font-family: 'Courier New', monospace;
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #667eea;
+        text-align: center;
+        margin: 10px 0;
+    }
+
+    .queue-status {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .queue-status h2 {
+        margin: 0 0 20px 0;
+        font-size: 2em;
+        font-weight: 300;
+    }
+
+    .status-indicator {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+        font-size: 1.1em;
+        margin: 10px;
+    }
+
+    .status-waiting {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .status-serving {
+        background: #28a745;
+        color: white;
+    }
+
+    .time-remaining {
+        background: #28a745;
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin: 20px 0;
+        font-size: 1.3em;
+        font-weight: bold;
+    }
+
+    .queue-history {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    .queue-history h3 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 1.4em;
+    }
+
+    .queue-item {
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .queue-item:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .queue-item .service-name {
+        font-weight: bold;
+        color: #667eea;
+        font-size: 1.1em;
+    }
+
+    .queue-item .token-number {
+        background: #667eea;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+
+    .queue-item .status {
+        padding: 3px 8px;
+        border-radius: 15px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+
+    .status-waiting { background: #ffc107; color: #212529; }
+    .status-serving { background: #28a745; color: white; }
+    .status-completed { background: #6c757d; color: white; }
+    .status-cancelled { background: #dc3545; color: white; }
+
+    .no-queues {
+        text-align: center;
+        color: #6c757d;
+        font-style: italic;
+        padding: 40px;
+    }
+
+    .action-buttons {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .btn-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1em;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-block;
+        margin: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header h1 {
+            font-size: 2em;
+        }
+
+        .queue-status h2 {
+            font-size: 1.5em;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome to Your Dashboard</h1>
+        <p>Manage your queue status and track your position</p>
+    </div>
+
+    <div class="user-info">
+        <h3><i class="fas fa-user"></i> Your Information</h3>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <div class="uqid-display">
+            <i class="fas fa-id-card"></i> UQID: {{ user.uqid }}
+        </div>
+    </div>
+
+    {% if active_queue %}
+    <div class="queue-status">
+        <h2><i class="fas fa-clock"></i> Current Queue Status</h2>
+        <div id="status-indicator" class="status-indicator status-{{ active_queue.status }}">
+            {{ active_queue.get_status_display }}
+        </div>
+        <p><strong>Service:</strong> {{ active_queue.service.name }}</p>
+        <p><strong>Token Number:</strong> {{ active_queue.token_number }}</p>
+        <p id="position"><strong>Your Position:</strong> calculating...</p>
+        <div id="time-remaining" class="time-remaining" style="display:none">
+            <i class="fas fa-hourglass-half"></i>
+            <span id="eta-text"></span>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="queue-history">
+        <h3><i class="fas fa-history"></i> Your Queue History</h3>
+        {% if user_queues %}
+            {% for queue in user_queues %}
+            <div class="queue-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="service-name">{{ queue.service.name }}</span>
+                        <span class="token-number">Token: {{ queue.token_number }}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="status status-{{ queue.status }}">{{ queue.get_status_display }}</span>
+                        <br>
+                        <small class="text-muted">{{ queue.joined_at|date:"M d, Y H:i" }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-queues">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <p>You haven't joined any queues yet.</p>
+                <a href="{% url 'home' %}" class="btn-custom">Join a Queue</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="action-buttons">
+        <a href="{% url 'home' %}" class="btn-custom">
+            <i class="fas fa-home"></i> Back to Home
+        </a>
+        <a href="{% url 'voice_interface' %}" class="btn-custom">
+            <i class="fas fa-microphone"></i> Voice Assistant
+        </a>
+        <a href="{% url 'logout' %}" class="btn-custom">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+</div>
+
+<script>
+    // Poll backend every 5 seconds for ETA and status updates
+    {% if active_queue %}
+    const activeQueueId = {{ active_queue.id }};
+    async function refreshQueue() {
+        try {
+            const res = await fetch(`/queue/eta/${activeQueueId}/`, { credentials: 'same-origin' });
+            if (!res.ok) return;
+            const data = await res.json();
+            // update status
+            document.getElementById('status-indicator').textContent = data.status;
+            document.getElementById('position').innerHTML = `<strong>Your Position:</strong> ${data.tokens_ahead}`;
+            document.getElementById('eta-text').textContent = `Estimated Time: ${data.eta_minutes} minutes`;
+            document.getElementById('time-remaining').style.display = 'block';
+        } catch (e) {
+            console.error('Failed to refresh queue info', e);
+        }
+    }
+    refreshQueue();
+    setInterval(refreshQueue, 5000);
+    {% endif %}
+</script>
+{% endblock %}</content>
+<parameter name="filePath">c:\Users\Computer\Desktop\queue\smart_queue\templates\accounts\dashboard.html

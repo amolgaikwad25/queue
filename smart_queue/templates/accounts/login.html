@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - Smart Queue{% endblock %}
+
+{% block content %}
+<style>
+    .login-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 3rem;
+        width: 100%;
+        max-width: 450px;
+        text-align: center;
+    }
+
+    .login-card h1 {
+        color: #333;
+        margin-bottom: 1rem;
+        font-size: 2.5em;
+        font-weight: 300;
+    }
+
+    .login-subtitle {
+        color: #666;
+        margin-bottom: 2rem;
+        font-size: 1.1em;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        text-align: left;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1em;
+        transition: border-color 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-size: 1.1em;
+        font-weight: 500;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-login:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .register-link {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .register-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .register-link a:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+
+    .forgot-password {
+        margin-top: 1rem;
+    }
+
+    .forgot-password a {
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 0.9em;
+        transition: color 0.3s ease;
+    }
+
+    .forgot-password a:hover {
+        color: #667eea;
+        text-decoration: underline;
+    }
+
+    .welcome-features {
+        text-align: left;
+        margin: 2rem 0;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .welcome-features h3 {
+        color: #333;
+        margin-bottom: 1rem;
+        font-size: 1.2em;
+    }
+
+    .welcome-features ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .welcome-features li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+    }
+
+    .welcome-features li:last-child {
+        border-bottom: none;
+    }
+
+    .welcome-features i {
+        color: #28a745;
+        margin-right: 0.5rem;
+        width: 20px;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        text-align: left;
+        border-left: 4px solid;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        border-color: #dc3545;
+        color: #721c24;
+    }
+
+    @media (max-width: 480px) {
+        .login-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .login-card h1 {
+            font-size: 2em;
+        }
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-card">
+        <h1><i class="fas fa-sign-in-alt"></i> Welcome Back</h1>
+        <p class="login-subtitle">Access your Smart Queue dashboard</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        
+
+        <form method="post" id="loginForm">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-control" required
+                       placeholder="Enter your username" autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required
+                       placeholder="Enter your password">
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+            </button>
+        </form>
+
+        <div class="register-link">
+            <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+            <p class="forgot-password">
+                <a href="#">Forgot your password?</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Form validation and enhancement
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (!username || !password) {
+            e.preventDefault();
+            alert('Please fill in all fields');
+            return;
+        }
+
+        const loginBtn = document.getElementById('loginBtn');
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<span class="loading"></span> Signing In...';
+    });
+
+    // Auto-focus and enter key handling
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameField = document.getElementById('username');
+        const passwordField = document.getElementById('password');
+
+        // Handle enter key in username field
+        usernameField.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                passwordField.focus();
+            }
+        });
+
+        // Handle enter key in password field
+        passwordField.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    });
+</script>
+{% endblock %}

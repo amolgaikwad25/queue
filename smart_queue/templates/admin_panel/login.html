@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Login - Smart Queue{% endblock %}
+
+{% block content %}
+<style>
+    .admin-login-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .admin-login-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 450px;
+        text-align: center;
+    }
+
+    .admin-login-card h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 2.5em;
+        font-weight: 300;
+    }
+
+    .admin-subtitle {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 1.1em;
+    }
+
+    .admin-icon {
+        font-size: 4em;
+        color: #667eea;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .admin-password-field {
+        position: relative;
+    }
+
+    .admin-password-field::before {
+        content: "🔒";
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2em;
+        color: #667eea;
+    }
+
+    .btn-admin-login {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 25px;
+        font-size: 1.1em;
+        font-weight: 500;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-admin-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-admin-login:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .security-notice {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 20px;
+        text-align: left;
+    }
+
+    .security-notice h4 {
+        color: #856404;
+        margin: 0 0 10px 0;
+        font-size: 1em;
+    }
+
+    .security-notice ul {
+        color: #856404;
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .security-notice li {
+        margin-bottom: 5px;
+        font-size: 0.9em;
+    }
+
+    .back-link {
+        margin-top: 20px;
+    }
+
+    .back-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .back-link a:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .loading {
+        display: none;
+        color: #667eea;
+        font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+        .admin-login-card {
+            padding: 30px 20px;
+        }
+
+        .admin-login-card h1 {
+            font-size: 2em;
+        }
+    }
+</style>
+
+<div class="admin-login-container">
+    <div class="admin-login-card">
+        <div class="admin-icon">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <h1>Admin Access</h1>
+        <p class="admin-subtitle">Secure administrative login required</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" id="adminLoginForm">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-control" required
+                       placeholder="Enter admin username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required
+                       placeholder="Enter password">
+            </div>
+
+            <div class="form-group">
+                <label for="admin_password">Admin Security Code</label>
+                <div class="admin-password-field">
+                    <input type="password" id="admin_password" name="admin_password" class="form-control" required
+                           placeholder="Enter admin security code">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-admin-login" id="loginBtn">
+                <span class="loading" id="loadingText">Authenticating...</span>
+                <span id="loginText"><i class="fas fa-sign-in-alt"></i> Access Admin Panel</span>
+            </button>
+        </form>
+
+        <div class="security-notice">
+            <h4><i class="fas fa-lock"></i> Security Information</h4>
+            <ul>
+                <li>Admin access requires valid credentials and security code</li>
+                <li>All login attempts are monitored and logged</li>
+                <li>Unauthorized access attempts will be reported</li>
+                <li><strong>New:</strong> Register as admin during signup with security code '123'</li>
+            </ul>
+        </div>
+
+        <div class="back-link">
+            <a href="{% url 'home' %}"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+        const loginBtn = document.getElementById('loginBtn');
+        const loginText = document.getElementById('loginText');
+        const loadingText = document.getElementById('loadingText');
+
+        loginBtn.disabled = true;
+        loginText.style.display = 'none';
+        loadingText.style.display = 'inline';
+
+        // Re-enable after 3 seconds if no redirect (error case)
+        setTimeout(function() {
+            loginBtn.disabled = false;
+            loginText.style.display = 'inline';
+            loadingText.style.display = 'none';
+        }, 3000);
+    });
+</script>
+{% endblock %}</content>
+<parameter name="filePath">c:\Users\Computer\Desktop\queue\smart_queue\templates\admin_panel\login.html

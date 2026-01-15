@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Smart Queue</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; }
+        .profile-info { margin: 1rem 0; }
+        .profile-info p { margin: 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Your Profile</h2>
+        <div class="profile-info">
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Full Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Phone:</strong>
+                {% if user.phone_number and user.phone_number|length == 10 %}
+                    {{ '******' }}{{ user.phone_number|slice:"6:10" }}
+                {% elif user.phone_number %}
+                    {{ user.phone_number }}
+                {% else %}
+                    Not set
+                {% endif %}
+            </p>
+            <p><strong>Universal Queue ID (UQID):</strong> {{ user.uqid }}</p>
+        </div>
+        <a href="{% url 'home' %}">Back to Home</a>
+    </div>
+</body>
+</html>
