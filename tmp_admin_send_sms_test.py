@@ -5,7 +5,6 @@ from notifications.sms_service import send_token_sms
 from notifications.models import AdminSMSLog
 
 User = get_user_model()
-# Find or create an admin user
 admin = User.objects.filter(is_staff=True).first()
 if not admin:
     admin = User.objects.create_user(username='testadmin', password='TestPass123')
