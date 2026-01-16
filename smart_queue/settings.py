@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 SECRET_KEY = 'django-insecure-iq$jzhp+i(&n%y923h)d5k1%g23b6xj#ge&3f8jy)r7w#4@v7u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = Flase
+DEBUG = False
 
 ALLOWED_HOSTS = ["*",".onrender.com"]
 
