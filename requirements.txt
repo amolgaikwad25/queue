@@ -4,3 +4,4 @@ pyttsx3==2.99
 sqlparse==0.5.5
 asgiref==3.11.0
 tzdata==2025.3
+gubicorn
